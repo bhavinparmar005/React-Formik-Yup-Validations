@@ -5,7 +5,7 @@ import *as yup from 'yup'
 
 const App = () => {
 
-  const { handleChange, handleSubmit, values, errors, touched } = useFormik({
+  const { handleChange, handleSubmit, values, errors, touched, resetForm } = useFormik({
     initialValues: {
       name: "",
       email: "",
@@ -15,18 +15,30 @@ const App = () => {
     },
     onSubmit: (data) => {
       console.log(data);
+      resetForm();
     },
     validationSchema: yup.object({
       name: yup.string().required("Name is required !").min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters').matches(/^[aA-zZ\s]+$/, 'Only alphabets and spaces are allowed'),
-      email: yup.string().email("Invalid email address !").required("Email is required"),
+      email: yup.string()
+        .required('Email is required')
+        .email('Invalid email format')
+        .test(
+          'valid-structure',
+          'Email must include a name before domain',
+          (value) => {
+            if (!value) return false;
+            return !/^@.+$/.test(value.trim()); // blocks '@domain.com'
+          }
+        ),
+      // email: yup.string().email("Invalid email address !").required("Email is required"),
       phoneNumber: yup.string().required("Phone number is required !").matches(/^[0-9]{10}$/, 'Phone number must be 10 digits'),
       password: yup.string().required("Password is required !").matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, 'Password must include upper, lower, number & symbol (8+ chars)'),
-      conformPassword:yup.string().required("Please confirm your password").oneOf([yup.ref('password'), null], 'Passwords must match')
+      conformPassword: yup.string().required("Please confirm your password").oneOf([yup.ref('password'), null], 'Passwords must match')
     })
   })
 
 
-  
+
   return (
     <>
       <div className="outer_container">
